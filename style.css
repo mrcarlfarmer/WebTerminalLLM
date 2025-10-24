@@ -130,6 +130,15 @@ body {
     color: #ffd93d;
 }
 
+.terminal-line.ai-response {
+    color: #4ecdc4;
+}
+
+.terminal-line.ai-prompt {
+    color: #4ecdc4;
+    font-weight: bold;
+}
+
 .terminal-line.streaming {
     position: relative;
 }
@@ -148,7 +157,8 @@ span.streaming::after {
 
 .loading-spinner {
     display: inline-block;
-    color: #4ecdc4;
+    color: inherit;
+    margin-left: 4px;
 }
 
 .loading-spinner::after {

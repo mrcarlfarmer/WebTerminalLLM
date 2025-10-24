@@ -381,16 +381,25 @@ async function processCommand(input) {
         // Show prompt with loading spinner
         const promptText = 'Gemini: ';
         const promptLine = document.createElement('div');
-        promptLine.className = 'terminal-line info';
+        promptLine.className = 'terminal-line ai-prompt';
         promptLine.innerHTML = promptText + '<span class="loading-spinner"></span>';
         outputElement.appendChild(promptLine);
         
+        // Ensure spinner is visible by scrolling
+        scrollToBottom();
+        
         // Create element for streaming response
         const responseElement = document.createElement('div');
-        responseElement.className = 'terminal-line';
+        responseElement.className = 'terminal-line ai-response';
         responseElement.style.whiteSpace = 'pre-wrap';
         outputElement.appendChild(responseElement);
         terminal.currentStreamingElement = responseElement;
+
+        // Enable AI streaming parallax
+        window.setParallaxAIStreaming(true);
+
+        // Small delay to ensure spinner is visible before streaming starts
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Stream response from Gemini
         await geminiService.streamChat(
@@ -413,6 +422,9 @@ async function processCommand(input) {
             },
             // onComplete
             (fullResponse) => {
+                // Disable AI streaming parallax
+                window.setParallaxAIStreaming(false);
+                
                 // Remove spinner if still present
                 const spinner = promptLine.querySelector('.loading-spinner');
                 if (spinner) {
@@ -427,6 +439,9 @@ async function processCommand(input) {
             },
             // onError
             (error) => {
+                // Disable AI streaming parallax on error
+                window.setParallaxAIStreaming(false);
+                
                 // Remove spinner on error
                 const spinner = promptLine.querySelector('.loading-spinner');
                 if (spinner) {
@@ -445,9 +460,13 @@ async function processCommand(input) {
 
 // Handle input
 inputElement.addEventListener('keydown', (e) => {
+    // Enable parallax for user typing
+    window.setParallaxUserTyping(true);
+    
     if (e.key === 'Enter') {
         if (terminal.isProcessing) return;
         
+        window.setParallaxUserTyping(false);
         ghostElement.textContent = '';
         ghostElement.setAttribute('data-suggestion', '');
         currentSuggestion = '';
@@ -494,7 +513,17 @@ inputElement.addEventListener('keydown', (e) => {
 
 // Show inline suggestion as user types
 inputElement.addEventListener('input', (e) => {
+    window.setParallaxUserTyping(true);
     updateSuggestion(e.target.value);
+});
+
+// Disable user typing parallax when not actively typing
+let typingTimeout;
+inputElement.addEventListener('input', () => {
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        window.setParallaxUserTyping(false);
+    }, 500);
 });
 
 // Keep input focused
@@ -509,6 +538,8 @@ let typingOffset = { x: 0, y: 0 };
 let targetOffset = { x: 0, y: 0 };
 let rotationOffset = 0;
 let targetRotation = 0;
+let isUserTyping = false;
+let isAIStreaming = false;
 
 function initParallax() {
     const layers = document.querySelectorAll('.parallax-layer');
@@ -518,9 +549,10 @@ function initParallax() {
         return;
     }
     
-    // Listen to input events
+    // Listen to user input events
     inputElement.addEventListener('input', () => {
-        // Create massive random shift when typing
+        if (!isUserTyping) return;
+        // User typing: sharp, random movements (blue/cyan tones)
         targetOffset.x = (Math.random() - 0.5) * 600;
         targetOffset.y = (Math.random() - 0.5) * 600;
         targetRotation = (Math.random() - 0.5) * 20;
@@ -533,10 +565,18 @@ function initParallax() {
         typingOffset.y += (targetOffset.y - typingOffset.y) * 0.15;
         rotationOffset += (targetRotation - rotationOffset) * 0.1;
         
-        // Decay back to center - even slower for more dramatic effect
-        targetOffset.x *= 0.88;
-        targetOffset.y *= 0.88;
-        targetRotation *= 0.9;
+        // AI streaming: smooth, wave-like motion (purple tones)
+        if (isAIStreaming) {
+            const time = Date.now() / 1000;
+            targetOffset.x = Math.sin(time * 2) * 300;
+            targetOffset.y = Math.cos(time * 1.5) * 300;
+            targetRotation = Math.sin(time) * 10;
+        } else {
+            // Decay back to center when idle
+            targetOffset.x *= 0.88;
+            targetOffset.y *= 0.88;
+            targetRotation *= 0.9;
+        }
         
         layers.forEach((layer, index) => {
             const speed = parseFloat(layer.dataset.speed);
@@ -551,6 +591,21 @@ function initParallax() {
     
     animate();
 }
+
+// Helper functions to control parallax state
+window.setParallaxUserTyping = (typing) => {
+    isUserTyping = typing;
+};
+
+window.setParallaxAIStreaming = (streaming) => {
+    isAIStreaming = streaming;
+    if (!streaming) {
+        // Reset to idle when streaming stops
+        targetOffset.x = 0;
+        targetOffset.y = 0;
+        targetRotation = 0;
+    }
+};
 
 // Focus input on load
 window.addEventListener('load', () => {
