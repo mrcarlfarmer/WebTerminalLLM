@@ -116,6 +116,23 @@ span.streaming::after {
     margin-left: 2px;
 }
 
+.loading-spinner {
+    display: inline-block;
+    color: #4ecdc4;
+}
+
+.loading-spinner::after {
+    content: '.';
+    animation: spinner 1.2s infinite;
+}
+
+@keyframes spinner {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+    100% { content: '.'; }
+}
+
 .terminal-input-line {
     display: flex;
     align-items: center;

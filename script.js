@@ -196,11 +196,11 @@ async function processCommand(input) {
             return;
         }
 
-        // Show prompt
+        // Show prompt with loading spinner
         const promptText = 'Gemini: ';
         const promptLine = document.createElement('div');
         promptLine.className = 'terminal-line info';
-        promptLine.textContent = promptText;
+        promptLine.innerHTML = promptText + '<span class="loading-spinner"></span>';
         outputElement.appendChild(promptLine);
         
         // Create element for streaming response
@@ -215,6 +215,12 @@ async function processCommand(input) {
             trimmed,
             // onChunk
             (chunk) => {
+                // Remove spinner on first chunk
+                const spinner = promptLine.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.remove();
+                }
+                
                 responseElement.textContent += chunk;
                 responseElement.classList.add('streaming');
                 
@@ -225,6 +231,12 @@ async function processCommand(input) {
             },
             // onComplete
             (fullResponse) => {
+                // Remove spinner if still present
+                const spinner = promptLine.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.remove();
+                }
+                
                 responseElement.classList.remove('streaming');
                 addOutput('');
                 terminal.isProcessing = false;
@@ -233,6 +245,12 @@ async function processCommand(input) {
             },
             // onError
             (error) => {
+                // Remove spinner on error
+                const spinner = promptLine.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.remove();
+                }
+                
                 responseElement.classList.remove('streaming');
                 addOutput(`\nError: ${error}`, 'error');
                 terminal.isProcessing = false;
