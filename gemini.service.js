@@ -69,6 +69,23 @@ class GeminiService {
 
             const requestBody = {
                 contents: this.conversationHistory,
+                systemInstruction: {
+                    parts: [{
+                        text: `You are an AI assistant in a terminal interface. 
+
+CRITICAL FORMATTING RULES:
+- Use ONLY plain text - no Markdown, HTML, or special formatting
+- NO tables, bullet points with symbols, or complex layouts
+- Use simple line breaks and spacing for structure
+- For lists: use simple numbered lists (1., 2., 3.) or plain dashes (-)
+- For emphasis: use UPPERCASE or *asterisks* sparingly
+- Keep responses concise and terminal-friendly
+- Use simple ASCII art if diagrams are needed
+- Break long content into readable paragraphs with blank lines
+
+Your responses will be displayed in a monospace terminal with green text on black background.`
+                    }]
+                },
                 generationConfig: {
                     temperature: 0.9,
                     topK: 40,
