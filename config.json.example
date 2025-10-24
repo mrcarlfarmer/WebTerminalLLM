@@ -1,0 +1,5 @@
+{
+  "geminiApiKey": "YOUR_API_KEY_HERE",
+  "geminiModel": "gemini-2.5-flash",
+  "apiEndpoint": "https://generativelanguage.googleapis.com/v1beta/models"
+}

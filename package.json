@@ -1,0 +1,12 @@
+{
+  "name": "webterminalllm",
+  "version": "1.0.0",
+  "description": "A web-based terminal interface powered by Google Gemini AI",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["terminal", "gemini", "ai", "llm"],
+  "author": "",
+  "license": "MIT"
+}
