@@ -156,6 +156,7 @@ const commands = {
   reset        - Reset conversation context
   config       - Show configuration status
   model        - Show or set the Gemini model (e.g., model gemini-2.5-flash)
+               Use 'model -v' to see descriptions
   about        - Display information about this terminal
   
 You can also just type any message to chat with Gemini AI!
@@ -207,9 +208,6 @@ ${!configured ? 'Please update config.json with your Gemini API key' : 'Ready to
                     models.forEach(model => {
                         const isCurrent = model.name === configService.getModel() ? ' (current)' : '';
                         output += `  - ${model.name}${isCurrent}\n`;
-                        if (model.description) {
-                            output += `    ${model.description}\n`;
-                        }
                     });
                 } else {
                     output += `  - gemini-2.5-flash (fastest, recommended)
@@ -218,7 +216,39 @@ ${!configured ? 'Please update config.json with your Gemini API key' : 'Ready to
   - gemini-1.5-flash (balanced speed and capability)`;
                 }
                 
-                output += '\n\nUsage: model <model-name>\nExample: model gemini-1.5-pro';
+                output += '\n\nUsage: model <model-name>\n       model -v (verbose: show descriptions)\nExample: model gemini-1.5-pro';
+                return output;
+            } else if (args[0] === '-v' || args[0] === '--verbose') {
+                // Show models with descriptions
+                const models = geminiService.getAvailableModels();
+                let output = `Current model: ${configService.getModel()}\n\nAvailable models (with descriptions):\n\n`;
+                
+                if (models.length > 0) {
+                    models.forEach(model => {
+                        const isCurrent = model.name === configService.getModel() ? ' (current)' : '';
+                        output += `  ${model.name}${isCurrent}\n`;
+                        if (model.displayName) {
+                            output += `    Display Name: ${model.displayName}\n`;
+                        }
+                        if (model.description) {
+                            output += `    ${model.description}\n`;
+                        }
+                        output += '\n';
+                    });
+                } else {
+                    output += `  gemini-2.5-flash
+    Fastest model, recommended for most tasks
+    
+  gemini-2.0-flash-exp
+    Experimental version with latest features
+    
+  gemini-1.5-pro
+    Advanced reasoning and complex tasks
+    
+  gemini-1.5-flash
+    Balanced speed and capability`;
+                }
+                
                 return output;
             } else {
                 // Set new model
@@ -240,6 +270,7 @@ ${!configured ? 'Please update config.json with your Gemini API key' : 'Ready to
   - gemini-1.5-pro
   - gemini-1.5-flash`;
                     }
+                    output += '\n\nUse: model <model-name>';
                     return output;
                 }
                 
