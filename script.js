@@ -504,7 +504,59 @@ terminalBody.addEventListener('click', () => {
     }
 });
 
+// Parallax effect coupled to typing
+let typingOffset = { x: 0, y: 0 };
+let targetOffset = { x: 0, y: 0 };
+let rotationOffset = 0;
+let targetRotation = 0;
+
+function initParallax() {
+    const layers = document.querySelectorAll('.parallax-layer');
+    console.log('Parallax layers found:', layers.length);
+    
+    if (layers.length === 0) {
+        console.error('No parallax layers found!');
+        return;
+    }
+    
+    // Listen to input events
+    inputElement.addEventListener('input', () => {
+        // Create massive random shift when typing
+        targetOffset.x = (Math.random() - 0.5) * 600;
+        targetOffset.y = (Math.random() - 0.5) * 600;
+        targetRotation = (Math.random() - 0.5) * 20;
+        console.log('Typing detected, new target:', targetOffset);
+    });
+    
+    // Smooth animation loop
+    function animate() {
+        // Ease towards target with more spring
+        typingOffset.x += (targetOffset.x - typingOffset.x) * 0.15;
+        typingOffset.y += (targetOffset.y - typingOffset.y) * 0.15;
+        rotationOffset += (targetRotation - rotationOffset) * 0.1;
+        
+        // Decay back to center - even slower for more dramatic effect
+        targetOffset.x *= 0.88;
+        targetOffset.y *= 0.88;
+        targetRotation *= 0.9;
+        
+        layers.forEach((layer, index) => {
+            const speed = parseFloat(layer.dataset.speed);
+            const x = typingOffset.x * speed;
+            const y = typingOffset.y * speed;
+            const rotation = rotationOffset * (index - 1); // Different rotation per layer
+            layer.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg) scale(${1 + Math.abs(typingOffset.x) / 3000})`;
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+    console.log('Parallax animation started');
+}
+
 // Focus input on load
 window.addEventListener('load', () => {
     inputElement.focus();
+    initParallax();
 });
