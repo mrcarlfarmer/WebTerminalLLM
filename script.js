@@ -99,7 +99,9 @@ function applySuggestion() {
             inputElement.value = 'model ' + currentSuggestion;
         }
         
-        suggestionElement.textContent = '';
+        // Clear ghost text
+        ghostElement.textContent = '';
+        ghostElement.setAttribute('data-suggestion', '');
         currentSuggestion = '';
         return true;
     }
@@ -158,6 +160,8 @@ const commands = {
   model        - Show or set the Gemini model (e.g., model gemini-2.5-flash)
                Use 'model -v' to see descriptions
   about        - Display information about this terminal
+  winstyle     - Switch to Windows Terminal style
+  macstyle     - Switch to Mac terminal style
   
 You can also just type any message to chat with Gemini AI!
 The AI will respond with streaming text in real-time.`;
@@ -310,6 +314,20 @@ Features:
                 output += `\n${i + 1}. ${role}: ${preview}`;
             });
             return output;
+        }
+    },
+    winstyle: {
+        description: 'Switch to Windows Terminal style',
+        execute: () => {
+            document.body.classList.add('windows-theme');
+            return 'Switched to Windows Terminal style';
+        }
+    },
+    macstyle: {
+        description: 'Switch to Mac terminal style',
+        execute: () => {
+            document.body.classList.remove('windows-theme');
+            return 'Switched to Mac terminal style';
         }
     }
 };

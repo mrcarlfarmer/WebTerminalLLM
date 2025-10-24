@@ -202,16 +202,20 @@ span.streaming::after {
     position: absolute;
     left: 0;
     top: 0;
-    color: transparent;
+    color: transparent !important;
+    background: transparent !important;
     pointer-events: none;
     font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
     white-space: pre;
+    opacity: 1;
+    user-select: none;
 }
 
 .terminal-input-ghost::after {
     content: attr(data-suggestion);
-    color: #555;
+    color: #555555;
+    opacity: 0.6;
 }
 
 .terminal-prompt {
@@ -325,4 +329,106 @@ span.streaming::after {
     body {
         padding: 10px;
     }
+}
+
+/* Windows Terminal Theme */
+body.windows-theme {
+    background: #0c0c0c;
+}
+
+body.windows-theme .parallax-layer {
+    opacity: 0.3;
+}
+
+body.windows-theme .terminal-container {
+    background: #0c0c0c;
+    border: 1px solid #333;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+body.windows-theme .terminal-header {
+    background: #1e1e1e;
+    border-bottom: 1px solid #333;
+    border-radius: 12px 12px 0 0;
+}
+
+body.windows-theme .terminal-title {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #cccccc;
+}
+
+body.windows-theme .terminal-body {
+    background: #0c0c0c;
+    font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    color: #cccccc;
+}
+
+body.windows-theme .terminal-line {
+    color: #cccccc;
+}
+
+body.windows-theme .terminal-prompt {
+    color: #16c60c;
+}
+
+body.windows-theme .terminal-input {
+    color: #cccccc;
+    background: transparent;
+    font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+}
+
+body.windows-theme .terminal-input-ghost {
+    font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    color: transparent !important;
+}
+
+body.windows-theme .terminal-input-ghost::after {
+    color: #666666;
+}
+
+body.windows-theme .terminal-line.ai-prompt {
+    color: #3b78ff;
+    font-weight: 600;
+}
+
+body.windows-theme .terminal-line.ai-response {
+    color: #3b78ff;
+}
+
+body.windows-theme .terminal-line.error {
+    color: #f85149;
+}
+
+body.windows-theme .terminal-line.warning {
+    color: #d29922;
+}
+
+body.windows-theme .terminal-line.info {
+    color: #3b78ff;
+}
+
+body.windows-theme .terminal-button.close {
+    background: #e81123;
+}
+
+body.windows-theme .terminal-button.minimize {
+    background: #ffb900;
+}
+
+body.windows-theme .terminal-button.maximize {
+    background: #00cc6a;
+}
+
+body.windows-theme .terminal-input-ghost {
+    font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    color: transparent !important;
+}
+
+body.windows-theme .terminal-input-ghost::after {
+    color: #666666;
 }
