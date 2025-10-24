@@ -1,0 +1,16 @@
+# Commands to push to GitHub
+
+# After creating a private repository on GitHub, run these commands:
+
+# 1. Add your GitHub repository as the remote origin
+# Replace YOUR_USERNAME with your actual GitHub username
+git remote add origin https://github.com/YOUR_USERNAME/WebTerminalLLM.git
+
+# 2. Rename the branch to main (if needed)
+git branch -M main
+
+# 3. Push to GitHub
+git push -u origin main
+
+# Note: You may be prompted to authenticate with GitHub
+# Use a personal access token or GitHub CLI for authentication
