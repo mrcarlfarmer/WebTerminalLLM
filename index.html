@@ -25,7 +25,10 @@
             </div>
             <div class="terminal-input-line">
                 <span class="terminal-prompt" id="prompt">user@gemini:~$</span>
-                <input type="text" class="terminal-input" id="input" autofocus autocomplete="off" spellcheck="false">
+                <div class="terminal-input-wrapper">
+                    <span class="terminal-input-ghost" id="ghost"></span>
+                    <input type="text" class="terminal-input" id="input" autofocus autocomplete="off" spellcheck="false">
+                </div>
             </div>
         </div>
     </div>

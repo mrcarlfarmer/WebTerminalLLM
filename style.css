@@ -137,16 +137,18 @@ span.streaming::after {
     display: flex;
     align-items: center;
     margin-top: 10px;
+    position: relative;
 }
 
-.terminal-prompt {
-    color: #00ff00;
-    margin-right: 8px;
-    white-space: nowrap;
+.terminal-input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
 }
 
 .terminal-input {
     flex: 1;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
@@ -154,6 +156,28 @@ span.streaming::after {
     font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
     caret-color: #00ff00;
+}
+
+.terminal-input-ghost {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: transparent;
+    pointer-events: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    white-space: pre;
+}
+
+.terminal-input-ghost::after {
+    content: attr(data-suggestion);
+    color: #555;
+}
+
+.terminal-prompt {
+    color: #00ff00;
+    margin-right: 8px;
+    white-space: nowrap;
 }
 
 .terminal-input:disabled {
@@ -164,6 +188,51 @@ span.streaming::after {
 .terminal-input::selection {
     background: #00ff00;
     color: #1e1e1e;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #2a2a2a;
+    border: 1px solid #00ff00;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.autocomplete-dropdown.show {
+    display: block;
+}
+
+.autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #00ff00;
+    white-space: nowrap;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background: #00ff00;
+    color: #1e1e1e;
+}
+
+.autocomplete-item .command-name {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.autocomplete-item .command-desc {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.autocomplete-item.selected .command-desc {
+    color: #333;
 }
 
 /* Scrollbar styling */

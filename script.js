@@ -19,6 +19,10 @@ const outputElement = document.getElementById('output');
 const inputElement = document.getElementById('input');
 const promptElement = document.getElementById('prompt');
 const terminalBody = document.getElementById('terminal');
+const ghostElement = document.getElementById('ghost');
+
+let currentSuggestion = '';
+let availableModels = [];
 
 // Helper function to scroll to bottom
 function scrollToBottom() {
@@ -33,13 +37,100 @@ function scrollToBottom() {
     terminalBody.scrollTop = terminalBody.scrollHeight;
 }
 
+// Inline suggestion functions
+function updateSuggestion(input) {
+    if (!input.trim()) {
+        ghostElement.textContent = '';
+        ghostElement.setAttribute('data-suggestion', '');
+        currentSuggestion = '';
+        return;
+    }
+
+    const parts = input.split(' ');
+    const command = parts[0].toLowerCase();
+    
+    // Command completion
+    if (parts.length === 1) {
+        const matches = Object.keys(commands).filter(cmd => 
+            cmd.startsWith(command) && cmd !== command
+        );
+        
+        if (matches.length > 0) {
+            const suggestion = matches[0];
+            currentSuggestion = suggestion;
+            // Show the typed text invisibly, then the suggestion in grey
+            ghostElement.textContent = input;
+            ghostElement.setAttribute('data-suggestion', suggestion.substring(command.length));
+            return;
+        }
+    }
+    
+    // Model command completion
+    if (command === 'model' && parts.length === 2) {
+        const modelInput = parts[1].toLowerCase();
+        const matches = availableModels.filter(model => 
+            model.toLowerCase().startsWith(modelInput) && model.toLowerCase() !== modelInput
+        );
+        
+        if (matches.length > 0) {
+            const suggestion = matches[0];
+            currentSuggestion = suggestion;
+            // Show the typed text invisibly, then the suggestion in grey
+            ghostElement.textContent = input;
+            ghostElement.setAttribute('data-suggestion', suggestion.substring(modelInput.length));
+            return;
+        }
+    }
+    
+    ghostElement.textContent = '';
+    ghostElement.setAttribute('data-suggestion', '');
+    currentSuggestion = '';
+}
+
+function applySuggestion() {
+    if (currentSuggestion) {
+        const parts = inputElement.value.split(' ');
+        
+        if (parts.length === 1) {
+            // Complete command
+            inputElement.value = currentSuggestion + ' ';
+        } else if (parts[0].toLowerCase() === 'model' && parts.length === 2) {
+            // Complete model name
+            inputElement.value = 'model ' + currentSuggestion;
+        }
+        
+        suggestionElement.textContent = '';
+        currentSuggestion = '';
+        return true;
+    }
+    return false;
+}
+
 // Load configuration on startup
 let configLoaded = false;
 configService.loadConfig()
-    .then(() => {
+    .then(async () => {
         configLoaded = true;
         if (configService.isConfigured()) {
             addOutput('✓ Configuration loaded successfully', 'info');
+            
+            // Fetch available models from API
+            addOutput('⟳ Fetching available models...', 'info');
+            const models = await geminiService.fetchAvailableModels();
+            if (models.length > 0) {
+                availableModels = models.map(m => m.name);
+                addOutput(`✓ Loaded ${models.length} available models`, 'info');
+            } else {
+                // Fallback to default list
+                availableModels = [
+                    'gemini-2.5-flash',
+                    'gemini-2.0-flash-exp',
+                    'gemini-1.5-pro',
+                    'gemini-1.5-flash'
+                ];
+                addOutput('⚠ Using default model list', 'warning');
+            }
+            
             addOutput('Ready to chat with Gemini AI!', 'info');
         } else {
             addOutput('⚠ Warning: API key not configured', 'warning');
@@ -108,21 +199,50 @@ ${!configured ? 'Please update config.json with your Gemini API key' : 'Ready to
             }
             
             if (args.length === 0) {
-                // Show current model
-                return `Current model: ${configService.getModel()}
-
-Available models:
-  - gemini-2.5-flash (fastest, recommended)
+                // Show current model and list available models
+                const models = geminiService.getAvailableModels();
+                let output = `Current model: ${configService.getModel()}\n\nAvailable models:\n`;
+                
+                if (models.length > 0) {
+                    models.forEach(model => {
+                        const isCurrent = model.name === configService.getModel() ? ' (current)' : '';
+                        output += `  - ${model.name}${isCurrent}\n`;
+                        if (model.description) {
+                            output += `    ${model.description}\n`;
+                        }
+                    });
+                } else {
+                    output += `  - gemini-2.5-flash (fastest, recommended)
   - gemini-2.0-flash-exp (experimental)
-  - gemini-pro
-  - gemini-1.5-pro
-  - gemini-1.5-flash
-
-Usage: model <model-name>
-Example: model gemini-2.5-flash`;
+  - gemini-1.5-pro (advanced reasoning)
+  - gemini-1.5-flash (balanced speed and capability)`;
+                }
+                
+                output += '\n\nUsage: model <model-name>\nExample: model gemini-1.5-pro';
+                return output;
             } else {
                 // Set new model
                 const newModel = args[0];
+                const models = geminiService.getAvailableModels();
+                const validModels = models.length > 0 
+                    ? models.map(m => m.name.toLowerCase())
+                    : availableModels.map(m => m.toLowerCase());
+                
+                if (!validModels.includes(newModel.toLowerCase())) {
+                    let output = `Invalid model: ${newModel}\n\nAvailable models:\n`;
+                    if (models.length > 0) {
+                        models.forEach(model => {
+                            output += `  - ${model.name}\n`;
+                        });
+                    } else {
+                        output += `  - gemini-2.5-flash
+  - gemini-2.0-flash-exp
+  - gemini-1.5-pro
+  - gemini-1.5-flash`;
+                    }
+                    return output;
+                }
+                
                 configService.config.geminiModel = newModel;
                 geminiService.clearHistory(); // Clear history when changing models
                 return `Model changed to: ${newModel}
@@ -296,39 +416,54 @@ async function processCommand(input) {
 inputElement.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         if (terminal.isProcessing) return;
+        
+        ghostElement.textContent = '';
+        ghostElement.setAttribute('data-suggestion', '');
+        currentSuggestion = '';
         const input = inputElement.value;
         inputElement.value = '';
         processCommand(input);
+    } else if (e.key === 'Tab') {
+        e.preventDefault();
+        if (applySuggestion()) {
+            updateSuggestion(inputElement.value);
+        }
     } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         if (terminal.historyIndex > 0) {
             terminal.historyIndex--;
             inputElement.value = terminal.history[terminal.historyIndex];
+            updateSuggestion(inputElement.value);
         }
     } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (terminal.historyIndex < terminal.history.length - 1) {
             terminal.historyIndex++;
             inputElement.value = terminal.history[terminal.historyIndex];
+            updateSuggestion(inputElement.value);
         } else {
             terminal.historyIndex = terminal.history.length;
             inputElement.value = '';
+            ghostElement.textContent = '';
+            ghostElement.setAttribute('data-suggestion', '');
+            currentSuggestion = '';
         }
-    } else if (e.key === 'Tab') {
-        e.preventDefault();
-        // Simple tab completion for commands
-        const input = inputElement.value;
-        const matches = Object.keys(commands).filter(cmd => cmd.startsWith(input));
-        if (matches.length === 1) {
-            inputElement.value = matches[0];
-        } else if (matches.length > 1) {
-            addOutput(`${promptElement.textContent} ${input}`);
-            addOutput(matches.join('  '), 'info');
-        }
+    } else if (e.key === 'Escape') {
+        ghostElement.textContent = '';
+        ghostElement.setAttribute('data-suggestion', '');
+        currentSuggestion = '';
     } else if (e.key === 'l' && e.ctrlKey) {
         e.preventDefault();
         commands.clear.execute();
+        ghostElement.textContent = '';
+        ghostElement.setAttribute('data-suggestion', '');
+        currentSuggestion = '';
     }
+});
+
+// Show inline suggestion as user types
+inputElement.addEventListener('input', (e) => {
+    updateSuggestion(e.target.value);
 });
 
 // Keep input focused

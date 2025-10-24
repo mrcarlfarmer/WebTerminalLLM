@@ -3,6 +3,50 @@ class GeminiService {
     constructor(configService) {
         this.configService = configService;
         this.conversationHistory = [];
+        this.availableModels = [];
+    }
+
+    async fetchAvailableModels() {
+        try {
+            const apiKey = this.configService.getApiKey();
+            if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+                console.warn('Cannot fetch models: API key not configured');
+                return [];
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                console.error('Failed to fetch models:', response.status);
+                return [];
+            }
+
+            const data = await response.json();
+            
+            // Filter to only include models that support generateContent
+            this.availableModels = data.models
+                .filter(model => {
+                    const methods = model.supportedGenerationMethods || [];
+                    return methods.includes('generateContent');
+                })
+                .map(model => ({
+                    name: model.name.replace('models/', ''),
+                    displayName: model.displayName,
+                    description: model.description
+                }))
+                .sort((a, b) => b.name.localeCompare(a.name)); // Newest first
+            
+            console.log('Fetched available models:', this.availableModels);
+            return this.availableModels;
+        } catch (error) {
+            console.error('Error fetching models:', error);
+            return [];
+        }
+    }
+
+    getAvailableModels() {
+        return this.availableModels;
     }
 
     async streamChat(message, onChunk, onComplete, onError) {
@@ -43,7 +87,9 @@ class GeminiService {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+                const errorMsg = errorData.error?.message || `API request failed with status ${response.status}`;
+                console.error('API Error:', errorData);
+                throw new Error(`${errorMsg}\n\nModel: ${model}\nEndpoint: ${url}`);
             }
 
             const reader = response.body.getReader();
