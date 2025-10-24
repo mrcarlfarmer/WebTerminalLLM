@@ -64,6 +64,7 @@ const commands = {
   history      - Show conversation history
   reset        - Reset conversation context
   config       - Show configuration status
+  model        - Show or set the Gemini model (e.g., model gemini-2.5-flash)
   about        - Display information about this terminal
   
 You can also just type any message to chat with Gemini AI!
@@ -97,6 +98,36 @@ The AI will respond with streaming text in real-time.`;
   Endpoint: ${configService.getApiEndpoint()}
   
 ${!configured ? 'Please update config.json with your Gemini API key' : 'Ready to use!'}`;
+        }
+    },
+    model: {
+        description: 'Show or set the Gemini model',
+        execute: (args) => {
+            if (!configLoaded) {
+                return 'Configuration not loaded yet';
+            }
+            
+            if (args.length === 0) {
+                // Show current model
+                return `Current model: ${configService.getModel()}
+
+Available models:
+  - gemini-2.5-flash (fastest, recommended)
+  - gemini-2.0-flash-exp (experimental)
+  - gemini-pro
+  - gemini-1.5-pro
+  - gemini-1.5-flash
+
+Usage: model <model-name>
+Example: model gemini-2.5-flash`;
+            } else {
+                // Set new model
+                const newModel = args[0];
+                configService.config.geminiModel = newModel;
+                geminiService.clearHistory(); // Clear history when changing models
+                return `Model changed to: ${newModel}
+Conversation history has been reset.`;
+            }
         }
     },
     about: {
