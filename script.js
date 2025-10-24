@@ -512,7 +512,6 @@ let targetRotation = 0;
 
 function initParallax() {
     const layers = document.querySelectorAll('.parallax-layer');
-    console.log('Parallax layers found:', layers.length);
     
     if (layers.length === 0) {
         console.error('No parallax layers found!');
@@ -525,7 +524,6 @@ function initParallax() {
         targetOffset.x = (Math.random() - 0.5) * 600;
         targetOffset.y = (Math.random() - 0.5) * 600;
         targetRotation = (Math.random() - 0.5) * 20;
-        console.log('Typing detected, new target:', targetOffset);
     });
     
     // Smooth animation loop
@@ -552,7 +550,6 @@ function initParallax() {
     }
     
     animate();
-    console.log('Parallax animation started');
 }
 
 // Focus input on load

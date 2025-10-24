@@ -7,8 +7,11 @@ A web-based terminal interface that connects to Google's Gemini API for real-tim
 - 🤖 **Real-time AI Chat**: Stream responses from Google Gemini AI directly in your terminal
 - 💬 **Conversation Context**: Maintains conversation history for contextual responses
 - ⚡ **Streaming Responses**: See AI responses appear in real-time, character by character
-- 🎨 **Modern Terminal UI**: Beautiful terminal interface with a retro aesthetic
+- 🎨 **Modern Terminal UI**: Beautiful terminal interface with a retro aesthetic and dynamic parallax background
+- 🌊 **Interactive Parallax**: Background gradients react to your typing with smooth animations
 - 📝 **Command History**: Navigate through previous commands with arrow keys
+- 🔄 **Model Switching**: Switch between different Gemini models on the fly
+- 💡 **Auto-complete**: Ghost text suggestions as you type commands
 - 🔧 **Easy Configuration**: Simple JSON config file for API setup
 
 ## Setup
@@ -46,6 +49,8 @@ A web-based terminal interface that connects to Google's Gemini API for real-tim
 - `reset` - Reset conversation context
 - `config` - Show configuration status
 - `about` - Display information about this terminal
+- `model` - List available models or switch models
+- `model -v` - Show detailed model descriptions
 
 ### Chat with AI
 
